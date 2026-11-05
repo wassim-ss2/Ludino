@@ -1,0 +1,15 @@
+{
+  "name": "Ludino — منصة الألعاب المجانية",
+  "short_name": "Ludino",
+  "description": "اكتشف الألعاب المجانية والعروض والمجتمع في مكان واحد.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#05080d",
+  "theme_color": "#ff6b20",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

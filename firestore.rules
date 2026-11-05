@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+    function allowedChannel(channel) { return channel in ['general', 'lfg', 'news', 'media']; }
+    function validMessage() {
+      return request.resource.data.keys().hasOnly(['text', 'uid', 'name', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 1000
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 20
+        && request.resource.data.createdAt == request.time;
+    }
+    match /channels/{channel}/messages/{messageId} {
+      allow read: if signedIn() && allowedChannel(channel);
+      allow create: if signedIn() && allowedChannel(channel) && validMessage();
+      allow update, delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid;
+      allow update: if signedIn() && request.auth.uid == uid;
+      allow delete: if isAdmin();
+    }
+    match /subscriptions/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
+    }
+    match /adminLogs/{logId} { allow read, write: if isAdmin(); }
+  }
+}
